@@ -2,3 +2,23 @@
   width: 100%;
   height: 100vh;
 }
+
+.button_container {
+  width: 100%;
+  position: absolute;
+  top: 70%;
+}
+
+.button_wrapper {
+  width: 100%;
+  max-width: 1000px;
+  margin: auto;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.button_wrapper button {
+  padding: 5px 15px;
+  margin: 2.5px;
+}
