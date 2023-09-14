@@ -98,6 +98,20 @@ export default function Scene() {
               Movement {animation.movement}
             </button>
           ))}
+          <button
+            onClick={() => {
+              three.freeRobotMovement();
+            }}
+          >
+            Free Movement
+          </button>
+          <button
+            onClick={() => {
+              three.resetRobotPosition();
+            }}
+          >
+            Reset Position
+          </button>
         </div>
       </div>
     </>

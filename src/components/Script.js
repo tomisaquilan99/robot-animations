@@ -2,7 +2,6 @@ import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
 import { gsap } from "gsap";
-
 class ThreeExperience {
   actions = [];
   mixer = null;
@@ -84,21 +83,6 @@ class ThreeExperience {
         const action = this.mixer.clipAction(clip);
         this.actions.push(action);
       }
-      // Mover hacia la derecha en X
-      //this.moveRobot("X", Math.PI);
-
-      // Mover hacia la izquierda en X y rotar
-      //this.moveRobot("-X", -Math.PI);
-
-      // Mover hacia adelante en Z y rotar
-      //this.moveRobot("Z", Math.PI);
-
-      // Mover hacia atrás en Z y rotar
-      //this.moveRobot("-Z", -Math.PI);
-
-      //this.moveRobot();
-      //this.playAnimation(6, false);
-      //this.moveRobotBack();
     });
   }
 
@@ -274,16 +258,6 @@ class ThreeExperience {
         console.error("Dirección no válida");
         return;
     }
-
-    // rotation = 0;
-
-    // this.timeline.to(this.robot.rotation, {
-    //   y: rotation + Math.PI,
-    //   duration: 1,
-    //   onComplete: () => {
-    //     this.playAnimation(9, true);
-    //   },
-    // });
   }
 
   addLight() {
@@ -293,6 +267,81 @@ class ThreeExperience {
 
     const al = new THREE.AmbientLight("#ffffff", 0.8);
     this.scene.add(al);
+  }
+
+  freeRobotMovement() {
+    this.playAnimation(6, false);
+    document.addEventListener("keydown", (event) => {
+      // Definir una velocidad de movimiento
+      const movementSpeed = 0.3;
+      // Definir una velocidad de rotación
+      const rotationSpeed = 0.1;
+
+      // Obtener la tecla presionada
+      const key = event.key;
+
+      // Variables para mantener la posición actual del robot
+      const currentPosition = this.robot.position.clone();
+      const newPosition = this.robot.position.clone();
+
+      // Verificar qué tecla se presionó y realizar la acción correspondiente
+      switch (key) {
+        case "ArrowLeft": // Girar hacia la izquierda
+          this.robot.rotation.y += rotationSpeed;
+          break;
+
+        case "ArrowRight": // Girar hacia la derecha
+          this.robot.rotation.y -= rotationSpeed;
+          break;
+
+        case "ArrowUp": // Mover hacia adelante en la dirección de la rotación
+          const forward = new THREE.Vector3(0, 0, 1);
+          forward.applyQuaternion(this.robot.quaternion);
+          forward.multiplyScalar(movementSpeed);
+          newPosition.add(forward);
+          break;
+
+        case "ArrowDown": // Mover hacia atrás en la dirección opuesta de la rotación
+          const backward = new THREE.Vector3(0, 0, -1);
+          backward.applyQuaternion(this.robot.quaternion);
+          backward.multiplyScalar(movementSpeed);
+          newPosition.add(backward);
+          break;
+
+        default:
+          // No hacer nada para otras teclas
+          break;
+      }
+      const planeSize = 30;
+      const halfPlaneSize = planeSize / 2;
+
+      if (
+        newPosition.x > halfPlaneSize ||
+        newPosition.x < -halfPlaneSize ||
+        newPosition.z > halfPlaneSize ||
+        newPosition.z < -halfPlaneSize
+      ) {
+        // Si cruza los límites, no permitas que el robot se mueva en esa dirección
+        return;
+      }
+
+      // Si no cruza los límites, actualiza la posición del robot
+      this.robot.position.copy(newPosition);
+    });
+  }
+
+  resetRobotPosition() {
+    if (this.currentAnimation) {
+      this.currentAnimation.stop();
+    }
+    this.timeline.to(this.robot.position, {
+      x: 0,
+      z: 0,
+      duration: 3,
+      onComplete: () => {
+        this.timeline.to(this.robot.rotation, { y: 0 });
+      },
+    });
   }
 
   render() {
