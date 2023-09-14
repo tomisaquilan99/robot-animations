@@ -65,6 +65,13 @@ export default function Scene() {
     },
   ];
 
+  const robotMoveAnimations = [
+    { movement: "X", rotationParam: Math.PI },
+    { movement: "-X", rotationParam: -Math.PI },
+    { movement: "Z", rotationParam: Math.PI },
+    { movement: "-Z", rotationParam: -Math.PI },
+  ];
+
   useEffect(() => {
     three.initScene();
     return () => {
@@ -78,16 +85,17 @@ export default function Scene() {
       <div id="container3D" className="scene_container"></div>
       <div className="button_container">
         <div className="button_wrapper">
-          {animations.map((animation) => (
+          {robotMoveAnimations.map((animation) => (
             <button
               onClick={() => {
-                three.playAnimation(
-                  animation.animationIndex,
-                  animation.isEmoteAnimation
+                three.moveRobot(animation.movement, animation.rotationParam);
+                three.moveRobotBack(
+                  animation.movement,
+                  animation.rotationParam
                 );
               }}
             >
-              Animation {animation.animationIndex}
+              Movement {animation.movement}
             </button>
           ))}
         </div>

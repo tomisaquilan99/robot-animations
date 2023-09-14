@@ -1,6 +1,7 @@
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
+import { gsap } from "gsap";
 
 class ThreeExperience {
   actions = [];
@@ -8,6 +9,12 @@ class ThreeExperience {
   prevAnimation = null;
   currentAnimation = null;
   clock = null;
+  robot = null;
+  timeline = new gsap.timeline({
+    defaults: {
+      duration: 1,
+    },
+  });
 
   constructor() {
     this.container = document.createElement("div");
@@ -19,7 +26,7 @@ class ThreeExperience {
       0.1,
       100
     );
-    this.camera.position.set(0, 1, 8);
+    this.camera.position.set(13, 25, 25);
     this.scene = new THREE.Scene();
     this.scene.add(this.camera);
 
@@ -34,7 +41,15 @@ class ThreeExperience {
     this.renderer.setAnimationLoop(this.render.bind(this));
     this.container.appendChild(this.renderer.domElement);
 
+    const plane = new THREE.Mesh(
+      new THREE.PlaneGeometry(30, 30, 5),
+      new THREE.MeshBasicMaterial({ color: 0xff0000, side: THREE.DoubleSide })
+    );
+    this.scene.add(plane);
+    plane.rotation.x = Math.PI * -0.5;
+
     /* Controls */
+
     this.controls = new OrbitControls(this.camera, this.renderer.domElement);
     this.controls.enableDamping = true;
     this.controls.target.y = 1.5;
@@ -63,11 +78,27 @@ class ThreeExperience {
   loadModel() {
     this.loader.load("RobotExpressive.glb", (gltf) => {
       this.scene.add(gltf.scene);
+      this.robot = gltf.scene;
       this.mixer = new THREE.AnimationMixer(gltf.scene);
       for (const clip of gltf.animations) {
         const action = this.mixer.clipAction(clip);
         this.actions.push(action);
       }
+      // Mover hacia la derecha en X
+      //this.moveRobot("X", Math.PI);
+
+      // Mover hacia la izquierda en X y rotar
+      //this.moveRobot("-X", -Math.PI);
+
+      // Mover hacia adelante en Z y rotar
+      //this.moveRobot("Z", Math.PI);
+
+      // Mover hacia atrás en Z y rotar
+      //this.moveRobot("-Z", -Math.PI);
+
+      //this.moveRobot();
+      //this.playAnimation(6, false);
+      //this.moveRobotBack();
     });
   }
 
@@ -88,6 +119,171 @@ class ThreeExperience {
     this.currentAnimation.reset();
     this.currentAnimation.fadeIn(0.5);
     this.currentAnimation.play();
+  }
+
+  moveRobotBack(direction, rotation) {
+    const initialPosition = 0;
+    const duration = 3.5;
+
+    switch (direction) {
+      case "X":
+        this.timeline
+          .to(this.robot.rotation, {
+            y: -rotation / 2,
+            duration: 1,
+          })
+          .to(this.robot.position, {
+            x: initialPosition,
+            duration: duration,
+            onComplete: () => {
+              this.timeline.to(this.robot.rotation, {
+                y: 0,
+                duration: 1,
+                onComplete: () => {
+                  this.playAnimation(9, true);
+                },
+              });
+            },
+          });
+        break;
+
+      case "-X":
+        this.timeline
+          .to(this.robot.rotation, {
+            y: -rotation / 2,
+            duration: 1,
+          })
+          .to(this.robot.position, {
+            x: initialPosition,
+            duration: duration,
+            onComplete: () => {
+              this.timeline.to(this.robot.rotation, {
+                y: 0,
+                duration: 1,
+                onComplete: () => {
+                  this.playAnimation(9, true);
+                },
+              });
+            },
+          });
+        break;
+
+      case "Z":
+        this.timeline
+          .to(this.robot.rotation, {
+            y: rotation,
+            duration: 1,
+          })
+          .to(this.robot.position, {
+            z: initialPosition,
+            duration: duration,
+            onComplete: () => {
+              this.timeline.to(this.robot.rotation, {
+                y: 0,
+                duration: 1,
+                onComplete: () => {
+                  this.playAnimation(9, true);
+                },
+              });
+            },
+          });
+        break;
+
+      case "-Z":
+        this.timeline
+          .to(this.robot.rotation, {
+            y: rotation * 2,
+            duration: 1,
+          })
+          .to(this.robot.position, {
+            z: initialPosition,
+            duration: duration,
+            onComplete: () => {
+              this.playAnimation(9, true);
+            },
+          });
+        break;
+
+      default:
+        console.error("Dirección no válida");
+        return;
+    }
+
+    // this.timeline
+    //   .to(this.robot.rotation, {
+    //     y: 3,
+    //     duration: 1,
+    //   })
+    //   .to(this.robot.position, {
+    //     z: initialPosition,
+    //     duration: duration,
+    //     onComplete: () => {
+    //       this.timeline.to(this.robot.rotation, {
+    //         y: 0,
+    //         duration: 1,
+    //         onComplete: () => {
+    //           this.playAnimation(9, true);
+    //         },
+    //       });
+    //     },
+    //   });
+  }
+
+  moveRobot(direction, rotation) {
+    const finalPosition = 14;
+    const duration = 3.5;
+
+    this.playAnimation(6, false);
+
+    switch (direction) {
+      case "X":
+        this.timeline
+          .to(this.robot.rotation, { y: rotation / 2 })
+          .to(this.robot.position, {
+            x: finalPosition,
+            duration: duration,
+          });
+        break;
+
+      case "-X":
+        this.timeline
+          .to(this.robot.rotation, { y: rotation / 2 })
+          .to(this.robot.position, {
+            x: -finalPosition,
+            duration: duration,
+          });
+        break;
+
+      case "Z":
+        this.timeline.to(this.robot.position, {
+          z: finalPosition,
+          duration: duration,
+        });
+        break;
+
+      case "-Z":
+        this.timeline
+          .to(this.robot.rotation, { y: rotation })
+          .to(this.robot.position, {
+            z: -finalPosition,
+            duration: duration,
+          });
+        break;
+
+      default:
+        console.error("Dirección no válida");
+        return;
+    }
+
+    // rotation = 0;
+
+    // this.timeline.to(this.robot.rotation, {
+    //   y: rotation + Math.PI,
+    //   duration: 1,
+    //   onComplete: () => {
+    //     this.playAnimation(9, true);
+    //   },
+    // });
   }
 
   addLight() {
