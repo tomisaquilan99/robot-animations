@@ -85,8 +85,9 @@ export default function Scene() {
       <div id="container3D" className="scene_container"></div>
       <div className="button_container">
         <div className="button_wrapper">
-          {robotMoveAnimations.map((animation) => (
+          {robotMoveAnimations.map((animation, index) => (
             <button
+              key={index}
               onClick={() => {
                 three.moveRobot(animation.movement, animation.rotationParam);
                 three.moveRobotBack(

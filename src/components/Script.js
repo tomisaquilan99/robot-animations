@@ -14,6 +14,8 @@ class ThreeExperience {
       duration: 1,
     },
   });
+  planeWidth;
+  planeHeight;
 
   constructor() {
     this.container = document.createElement("div");
@@ -28,6 +30,9 @@ class ThreeExperience {
     this.camera.position.set(13, 25, 25);
     this.scene = new THREE.Scene();
     this.scene.add(this.camera);
+    this.scene.background = new THREE.TextureLoader().load(
+      "public/fondo-futurista.avif"
+    );
 
     /* Renderer */
     this.renderer = new THREE.WebGLRenderer({
@@ -40,10 +45,26 @@ class ThreeExperience {
     this.renderer.setAnimationLoop(this.render.bind(this));
     this.container.appendChild(this.renderer.domElement);
 
-    const plane = new THREE.Mesh(
-      new THREE.PlaneGeometry(30, 30, 5),
-      new THREE.MeshBasicMaterial({ color: 0xff0000, side: THREE.DoubleSide })
+    const textureLoader = new THREE.TextureLoader();
+    const texture = textureLoader.load("public/piso.jpg"); // Cambia 'ruta/a/tu/imagen.jpg' a la ruta correcta de tu imagen
+
+    // Crea un material que utiliza la textura
+    const material = new THREE.MeshBasicMaterial({
+      map: texture,
+      side: THREE.DoubleSide,
+    });
+
+    // Crea el plano y aplica el material
+    this.planeWidth = 50;
+    this.planeHeight = 50;
+    const planeGeometry = new THREE.PlaneGeometry(
+      this.planeWidth,
+      this.planeHeight,
+      5
     );
+    const plane = new THREE.Mesh(planeGeometry, material);
+
+    // Agrega el plano a tu escena
     this.scene.add(plane);
     plane.rotation.x = Math.PI * -0.5;
 
@@ -55,7 +76,8 @@ class ThreeExperience {
 
     /* Loader */
     this.loader = new GLTFLoader();
-    this.loadModel();
+    this.loadModels();
+    //this.loadSecondModel();
 
     /* Lights */
     this.addLight();
@@ -74,7 +96,7 @@ class ThreeExperience {
     document.getElementById("container3D").appendChild(this.container);
   }
 
-  loadModel() {
+  loadModels() {
     this.loader.load("RobotExpressive.glb", (gltf) => {
       this.scene.add(gltf.scene);
       this.robot = gltf.scene;
@@ -84,7 +106,25 @@ class ThreeExperience {
         this.actions.push(action);
       }
     });
+
+    this.loader.load("public/scene.gltf", (gltf) => {
+      const secondModel = gltf.scene;
+      secondModel.position.set(0, 0, 10); // Cambia x, y, z a las coordenadas deseadas
+      secondModel.scale.set(0.03, 0.03, 0.03);
+      this.scene.add(secondModel);
+      this.secondModel = secondModel;
+    });
   }
+
+  // loadSecondModel() {
+  //   this.loader.load("public/scene.gltf", (gltf) => {
+  //     const secondModel = gltf.scene;
+  //     secondModel.position.set(0, 0, 4); // Cambia x, y, z a las coordenadas deseadas
+  //     secondModel.scale.set(0.03, 0.03, 0.03);
+  //     this.scene.add(secondModel);
+  //     this.secondModel = secondModel;
+  //   });
+  // }
 
   playAnimation(index, emote) {
     this.prevAnimation = this.currentAnimation;
@@ -214,8 +254,8 @@ class ThreeExperience {
   }
 
   moveRobot(direction, rotation) {
-    const finalPosition = 14;
-    const duration = 3.5;
+    const finalPosition = this.planeWidth / 2;
+    const duration = 5;
 
     this.playAnimation(6, false);
 
@@ -270,6 +310,8 @@ class ThreeExperience {
   }
 
   freeRobotMovement() {
+    let animationStopped = false;
+
     this.playAnimation(6, false);
     document.addEventListener("keydown", (event) => {
       // Definir una velocidad de movimiento
@@ -312,7 +354,17 @@ class ThreeExperience {
           // No hacer nada para otras teclas
           break;
       }
-      const planeSize = 30;
+
+      if (animationStopped) {
+        // Si está detenida, verifica si el robot ha girado y, si es así, permite la animación nuevamente
+        if (key === "ArrowLeft" || key === "ArrowRight") {
+          animationStopped = false;
+          this.playAnimation(6, false); // Reanuda la animación
+        }
+        return; // No permitas que el robot se mueva si la animación está detenida
+      }
+
+      const planeSize = this.planeHeight;
       const halfPlaneSize = planeSize / 2;
 
       if (
@@ -322,6 +374,8 @@ class ThreeExperience {
         newPosition.z < -halfPlaneSize
       ) {
         // Si cruza los límites, no permitas que el robot se mueva en esa dirección
+        animationStopped = true;
+        this.playAnimation(2, true);
         return;
       }
 
@@ -336,6 +390,7 @@ class ThreeExperience {
     }
     this.timeline.to(this.robot.position, {
       x: 0,
+      y: 0,
       z: 0,
       duration: 3,
       onComplete: () => {
