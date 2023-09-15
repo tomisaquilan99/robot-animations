@@ -84,6 +84,7 @@ export default function Scene() {
     <>
       <div id="container3D" className="scene_container"></div>
       <div className="button_container">
+        <div className="author">Robot Animations by Tomas Saquilan</div>
         <div className="button_wrapper">
           {robotMoveAnimations.map((animation, index) => (
             <button

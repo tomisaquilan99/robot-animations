@@ -6,7 +6,7 @@
 .button_container {
   width: 100%;
   position: absolute;
-  top: 10%;
+  top: 5%;
 }
 
 .button_wrapper {
@@ -21,4 +21,13 @@
 .button_wrapper button {
   padding: 5px 15px;
   margin: 2.5px;
+}
+
+.author {
+  display: flex;
+  justify-content: center;
+  color: white;
+  align-items: center;
+  margin-bottom: 15px;
+  font-size: 30px;
 }

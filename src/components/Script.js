@@ -31,7 +31,7 @@ class ThreeExperience {
     this.scene = new THREE.Scene();
     this.scene.add(this.camera);
     this.scene.background = new THREE.TextureLoader().load(
-      "public/fondo-futurista.avif"
+      "/fondo-futurista.avif"
     );
 
     /* Renderer */
@@ -46,7 +46,7 @@ class ThreeExperience {
     this.container.appendChild(this.renderer.domElement);
 
     const textureLoader = new THREE.TextureLoader();
-    const texture = textureLoader.load("public/piso.jpg"); // Cambia 'ruta/a/tu/imagen.jpg' a la ruta correcta de tu imagen
+    const texture = textureLoader.load("/piso.jpg"); // Cambia 'ruta/a/tu/imagen.jpg' a la ruta correcta de tu imagen
 
     // Crea un material que utiliza la textura
     const material = new THREE.MeshBasicMaterial({
